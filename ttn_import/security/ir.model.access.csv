@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ttn_import_ttn_import,ttn.unmatched,model_ttn_unmatched,base.group_user,1,1,1,1
+access_ttn_import_ttn_import2,ttn.measurement.config,model_ttn_measurement_config,base.group_user,1,1,1,1
+access_ttn_import_ttn_import3,ttn.measurement,model_ttn_measurement,base.group_user,1,1,1,1

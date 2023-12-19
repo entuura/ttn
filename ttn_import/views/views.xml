@@ -1,0 +1,85 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="ttn_import.list">
+      <field name="name">Unclassified TTN events</field>
+      <field name="model">ttn.unmatched</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="device"/>
+          <field name="application"/>
+          <field name="received_at"/>
+          <field name="received_by"/>
+          <field name="decoded"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="ttn_import.configs">
+      <field name="name">Measurement selectors</field>
+      <field name="model">ttn.measurement.config</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="enabled"/>
+          <field name="brand"/>
+          <field name="model"/>
+          <field name="f_port"/>
+          <field name="key"/>
+          <field name="what"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="ttn_import.measurements">
+      <field name="name">Measurement</field>
+      <field name="model">ttn.measurement</field>
+      <field name="arch" type="xml">
+        <graph string="Measurements" type="line">
+          <field name="who"/>
+          <field name="what"/>
+          <field name="when"/>
+          <field name="howmuch" type="measure"/>
+        </graph>
+      </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="ttn_import.act_unmatched">
+      <field name="name">View unmatched TTN events</field>
+      <field name="res_model">ttn.unmatched</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    <record model="ir.actions.act_window" id="ttn_import.act_config">
+      <field name="name">Configure measurements</field>
+      <field name="res_model">ttn.measurement.config</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    <record model="ir.actions.act_window" id="ttn_import.act_measurements">
+      <field name="name">Measurements</field>
+      <field name="res_model">ttn.measurement</field>
+      <field name="view_mode">graph,tree</field>
+    </record>
+
+    <!-- add a new menu item on unmatched list -->
+    <record model="ir.actions.server" id="ttn_import.act_serv_try_extract">
+      <field name="name">Try to extract</field>
+      <field name="model_id" ref="model_ttn_unmatched"/>
+      <field name="binding_model_id" ref="model_ttn_unmatched"/>
+      <field name="binding_view_types">list</field>
+      <field name="state">code</field>
+      <field name="code">
+        for r in records:
+          r.tryExtract()
+      </field>
+    </record>
+
+    <menuitem name="Sensors" id="ttn_import.menu_root"
+	    web_icon="ttn_import,static/description/icon.png"/>
+      <menuitem name="Graph the Measurements" id="ttn_import.menu_measurements_gr" parent="ttn_import.menu_root"
+              action="ttn_import.act_measurements" sequence="40"/>
+      <menuitem name="Unmatched" id="ttn_import.menu_unmatched" parent="ttn_import.menu_root"
+              action="ttn_import.act_unmatched" sequence="50"/>
+      <menuitem name="Configuration" id="ttn_import.menu_cfg" parent="ttn_import.menu_root"
+              sequence="60"/>
+        <menuitem name="Selectors" id="ttn_import.menu_selectors" parent="ttn_import.menu_cfg"
+              action="ttn_import.act_config" sequence="10"/>
+  </data>
+</odoo>
