@@ -55,7 +55,7 @@
     <record model="ir.actions.act_window" id="ttn_import.act_measurements">
       <field name="name">Measurements</field>
       <field name="res_model">ttn.measurement</field>
-      <field name="view_mode">graph,tree</field>
+      <field name="view_mode">tree,graph</field>
     </record>
 
     <!-- add a new menu item on unmatched list -->
@@ -73,7 +73,7 @@
 
     <menuitem name="Sensors" id="ttn_import.menu_root"
 	    web_icon="ttn_import,static/description/icon.png"/>
-      <menuitem name="Graph the Measurements" id="ttn_import.menu_measurements_gr" parent="ttn_import.menu_root"
+      <menuitem name="Measurements" id="ttn_import.menu_measurements_gr" parent="ttn_import.menu_root"
               action="ttn_import.act_measurements" sequence="40"/>
       <menuitem name="Unmatched" id="ttn_import.menu_unmatched" parent="ttn_import.menu_root"
               action="ttn_import.act_unmatched" sequence="50"/>
