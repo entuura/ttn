@@ -9,6 +9,7 @@ class ThingsUnmatched(models.Model):
     _name = 'ttn.unmatched'
     _description = 'Incoming data from TTN'
     _order = "received_at DESC"
+    _rec_name = 'generated_name'
 
     device = fields.Char('Device Name', readonly=True)
     application = fields.Char('Application Name', readonly=True)
@@ -21,7 +22,13 @@ class ThingsUnmatched(models.Model):
     decoded = fields.Text('Payload decoded, JSON', readonly=True)
     brand = fields.Char('Brand of the sensor', readonly=True)
     model = fields.Char('Model of the sensor', readonly=True)
+    generated_name = fields.Char(compute = "_gen_name")
 
+    def _gen_name(self):
+        for rec in self:
+            self.generated_name = f"Unmatched item, number: {rec.id}"
+            return
+        
     # this is called from the Actions menu of the unmatched list view
     # to let people test/debug their selectors.
     def tryExtract(self):
@@ -40,19 +47,22 @@ class ThingsUnmatched(models.Model):
 class ThingMeasureConfig(models.Model):
     _name = 'ttn.measurement.config'
     _description = 'Specify which measurement to extract for a given brand/model pair.'
+    _rec_name = 'what'
 
     enabled = fields.Boolean('Enabled?', required=True, default=True)
-    brand = fields.Char('Brand of the sensor', required=True)
-    model = fields.Char('Model of the sensor', required=True)
-    f_port = fields.Integer('The port to match', required=True)
-    key = fields.Char('The key to extract from the payload.', required=True)
-    what = fields.Char('The name of the measurement.', required=True)
+    brand = fields.Char('Sensor brand', required=True)
+    model = fields.Char('Sensor model', required=True)
+    f_port = fields.Integer('Frame port to match', required=True)
+    key = fields.Char('Key to extract', required=True)
+    what = fields.Char('Measurement name', required=True)
 
-    # extract is called by the webhook, for each matching selector
-    # It must find the data and pass it the the target model/method. For
-    # now that's hardcoded to "add a row to ttn.measurement".
-    # extract returns true if it recorded the data.
     def extract(self, device_name, when, decoded):
+        '''
+        extract is called by the webhook, for each matching selector.
+        It must find the data and pass it the the target model/method. For
+        now that's hardcoded to "add a row to ttn.measurement".
+        extract returns true if it recorded the data.
+        '''
         if self.key in decoded:
             try:
                 howmuch = float(decoded[self.key])

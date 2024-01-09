@@ -4,6 +4,7 @@ import logging
 import base64
 import json
 from datetime import datetime
+import traceback
 from odoo import http
 
 _logger = logging.getLogger(__name__)
@@ -26,11 +27,25 @@ class TtnImport(http.Controller):
             decoded = data["uplink_message"]["decoded_payload"]
 
             # Fix up Steve's sensors, which do not send version_ids yet.
-            if "version_ids" not in data["uplink_message"] and "ADC_CH0V" in decoded:
-                data["uplink_message"]["version_ids"] = {
-                    "brand_id": "dragino",
-                    "model_id": "LSN50",
-                }
+            if "version_ids" not in data["uplink_message"]:
+                if "ADC_CH0V" in decoded:
+                    data["uplink_message"]["version_ids"] = {
+                        "brand_id": "dragino",
+                        "model_id": "LSN50",
+                    }
+                elif "Work_mode" in decoded:
+                    data["uplink_message"]["version_ids"] = {
+                        "brand_id": "dragino",
+                        "model_id": decoded["Work_mode"],
+                    }
+                # check if this has what we expect in it:
+                elif all([ k in decoded for k in [ 'batState', 'batV_V', 'intHum_pct', 'intTemp_C']]):
+                    data["uplink_message"]["version_ids"] = {
+                        "brand_id": "dragino",
+                        "model_id": "LHT65S-E5",
+                    }
+                else:
+                    raise NameError("could not fix missing version_ids")                
 
             selectors = http.request.env["ttn.measurement.config"].sudo().search([
                 ('brand', '=', data["uplink_message"]["version_ids"]["brand_id"]),
@@ -52,7 +67,7 @@ class TtnImport(http.Controller):
                     'device': data["end_device_ids"]["device_id"],
                     'application': data["end_device_ids"]["application_ids"]["application_id"],
                     'received_at': recvAt,
-                    'received_by': data["uplink_message"]["rx_metadata"][0]["gateway_ids"]["gateway_id"],
+                    'received_by': ", ".join([ rx["gateway_ids"]["gateway_id"] for rx in data["uplink_message"]["rx_metadata"]]),
                     'rssi': data["uplink_message"]["rx_metadata"][0]["rssi"],
                     'f_port': int(data["uplink_message"]["f_port"]),
                     'f_cnt': int(data["uplink_message"]["f_cnt"]),
